@@ -1,36 +1,47 @@
-// package: com.example.flutter.Service
 package com.example.cdaxVideo.Service;
 
+import com.sendgrid.*;
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Content;
+import com.sendgrid.helpers.mail.objects.Email;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import jakarta.mail.internet.MimeMessage;
+import java.io.IOException;
 
 @Service
 public class EmailService {
-
-    @Autowired
-    private JavaMailSender mailSender;
 
     @Autowired
     private Environment env;
 
     public void sendHtmlMail(String to, String subject, String htmlContent) {
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");
-            helper.setTo(to);
-            helper.setSubject(subject);
-            helper.setText(htmlContent, true);
-            String from = env.getProperty("spring.mail.username");
-            if (from != null) helper.setFrom(from);
-            mailSender.send(message);
-        } catch (Exception e) {
+            String apiKey = env.getProperty("SENDGRID_API_KEY");
+            if (apiKey == null) {
+                throw new RuntimeException("SENDGRID_API_KEY not found in environment");
+            }
+
+            Email from = new Email("no-reply@cdaxvideo.com"); // 👈 tu chahe to apna Gmail bhi likh sakta hai
+            Email toEmail = new Email(to);
+            Content content = new Content("text/html", htmlContent);
+            Mail mail = new Mail(from, subject, toEmail, content);
+
+            SendGrid sg = new SendGrid(apiKey);
+            Request request = new Request();
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
+
+            Response response = sg.api(request);
+
+            System.out.println("📨 SendGrid response code: " + response.getStatusCode());
+            System.out.println("Response body: " + response.getBody());
+
+        } catch (IOException e) {
             e.printStackTrace();
-            throw new RuntimeException("Failed to send email: " + e.getMessage());
+            throw new RuntimeException("Failed to send email via SendGrid: " + e.getMessage());
         }
     }
 }
