@@ -23,7 +23,7 @@ public class EmailService {
                 throw new RuntimeException("SENDGRID_API_KEY not found in environment");
             }
 
-            Email from = new Email("no-reply@cdaxvideo.com"); // 👈 tu chahe to apna Gmail bhi likh sakta hai
+            Email from = new Email(env.getProperty("app.email.from"));
             Email toEmail = new Email(to);
             Content content = new Content("text/html", htmlContent);
             Mail mail = new Mail(from, subject, toEmail, content);
