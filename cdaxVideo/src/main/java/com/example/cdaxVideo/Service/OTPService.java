@@ -18,13 +18,13 @@ public class OTPService {
     @Autowired
     private EmailService emailService;
 
-    // ✅ 6-digit random OTP generate
+    //  6-digit random OTP generate
     private String generateOtp() {
         int otp = new Random().nextInt(900000) + 100000;
         return String.valueOf(otp);
     }
 
-    // ✅ Generate + send OTP via email
+    // Generate + send OTP via email
     public String generateAndSendEmailOtp(String email) {
         try {
             // Delete any old OTPs for same email
@@ -45,7 +45,7 @@ public class OTPService {
                     + "<p>This code will expire in <b>10 minutes</b>.</p>";
             emailService.sendHtmlMail(email, "CDAX Verification Code", html);
 
-            System.out.println("✅ OTP sent successfully to " + email + " | OTP: " + otp);
+            System.out.println(" OTP sent successfully to " + email + " | OTP: " + otp);
             return otp;
 
         } catch (Exception e) {
@@ -55,7 +55,7 @@ public class OTPService {
         }
     }
 
-    // ✅ Verify OTP
+    //  Verify OTP
     public boolean verifyOtp(String target, String type, String otp) {
         Optional<OtpVerification> maybeOtp = otpRepo.findTopByTargetAndTypeOrderByIdDesc(target, type);
 
@@ -72,23 +72,23 @@ public class OTPService {
         record.setVerified(true);
         otpRepo.save(record);
 
-        System.out.println("✅ OTP verified successfully for: " + target);
+        System.out.println(" OTP verified successfully for: " + target);
         return true;
     }
 
-    // ✅ Shortcut for email OTP verification
+    //  Shortcut for email OTP verification
     public boolean verifyEmailOtp(String email, String otp) {
         return verifyOtp(email, "EMAIL", otp);
     }
 
-    // ✅ Check if email already verified (used in register)
+    //  Check if email already verified (used in register)
     public boolean isEmailVerified(String email) {
         return otpRepo.findTopByTargetAndTypeOrderByIdDesc(email, "EMAIL")
                 .map(OtpVerification::isVerified)
                 .orElse(false);
     }
 
-    // ✅ Clear verification status (after successful register)
+    //  Clear verification status (after successful register)
     public void clearEmailVerification(String email) {
         otpRepo.findTopByTargetAndTypeOrderByIdDesc(email, "EMAIL")
                 .ifPresent(rec -> {
@@ -97,9 +97,10 @@ public class OTPService {
                 });
     }
 
-    // ✅ Resend OTP if needed
+    //  Resend OTP if needed
     public String resendOtp(String email) {
         System.out.println("♻️ Resending OTP to: " + email);
         return generateAndSendEmailOtp(email);
     }
 }
+
